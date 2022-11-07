@@ -10,10 +10,10 @@
     "test": "jest"
   },
   "keywords": [],
-  "author": "CJ R. <cj@null.computer> (https://w3cj.now.sh)",
+  "author": "Ruhaan Doshi",
   "repository": {
     "type": "git",
-    "url": "https://github.com/w3cj/express-api-starter.git"
+    "url": "https://github.com/ruhaan15/Deepgram_Project"
   },
   "license": "MIT",
   "dependencies": {
