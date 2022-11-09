@@ -21,53 +21,11 @@ const upload = multer({ storage })
 const directoryPath = path.join(__dirname, '../../uploads');
 
 router.get('/', (req, res) => {
-  res.json(['😀', '😳', '🙄']);
+  res.json("You've hit the audio endpoint. Have fun!");
 });
 
-router.post('/upload', upload.single('file'), (req, res) => {
-  console.log(req.file)
-  if(req.file === undefined) {
-    res.status(500)
-    res.send("Nice try, you actually gotta upload a file.");
-  } else {
-    res.send("File successfully uploaded")
-  }
-});
-
-router.get('/metadata', async (req, res) => {
-  if(req.query.name) {
-    const name = req.query.name
-    const filePath = path.join(__dirname, `../../uploads/${name}`);
-    fs.stat(filePath, (err, stats) => {
-      if(err) {
-        console.log(err)
-        res.statusCode = 400;
-        return res.json({
-          status: "Whoops, that file does not exist!"
-        });
-      } else {
-        console.log(stats)
-        res.send({metadata: stats})
-      }
-    })
-  } else {
-    res.send("Please provide a param in the request.")
-  }
-})
-
-router.get('/list', (req, res) => {
-  fs.readdir(directoryPath, (err, files) => {
-    //handling error
-    if (err) {
-      res.sendStatus(404);
-      res.send('Unable to scan directory: ' + err);
-    }
-    res.json({all_files: files})
-
-  });
-})
-
-router.get('/file', async (req, res, next) => {
+// use query here because we want to "filter" results
+router.get('/file',  (req, res, next) => {
   // TODO(ruhaan): I'd like to implement a more robust error file system, where a malicious filename will not allow
   //  unwanted access to files. A database of filepaths will be conducive to this.
   let options = {
@@ -92,5 +50,59 @@ router.get('/file', async (req, res, next) => {
 
   res.send("No filename provided!");
 })
+
+// use param here because we want to get the metadata of a specific file
+router.get('/file/:file/metadata', async (req, res) => {
+  const fileName = req.params.file
+  console.log(req.params)
+  const filePath = path.join(__dirname, `../../uploads/${fileName}`);
+  fs.stat(filePath, (err, stats) => {
+    if(err) {
+      console.log(err)
+      res.statusCode = 400;
+      return res.json({
+        status: "Whoops, that file does not exist!"
+      });
+    } else {
+      console.log(stats)
+      res.send({metadata: stats})
+    }
+  })
+})
+
+router.get('/file/:file/download', (req, res) => {
+  const fileName = req.params.file
+  const filePath = path.join(__dirname, `../../uploads/${fileName}`);
+  res.download(filePath, (err) => {
+    // this function will automatically send an error when there is one
+    console.log(err);
+  })
+
+})
+
+router.get('/list', (req, res) => {
+  // async because I don't want to halt the server when this is ongoing
+  fs.readdir(directoryPath, (err, files) => {
+    //handling error
+    if (err) {
+      res.sendStatus(404);
+      res.send('Unable to scan directory: ' + err);
+    }
+    // const data = JSON.stringify(files)
+    res.json({all_files: files})
+
+  });
+})
+
+router.post('/upload', upload.single('file'), (req, res) => {
+  console.log(req.file)
+  if(req.file === undefined) {
+    res.status(500)
+    res.send("Nice try, you actually gotta upload a file.");
+  } else {
+    res.send("File successfully uploaded")
+  }
+});
+
 
 module.exports = router
