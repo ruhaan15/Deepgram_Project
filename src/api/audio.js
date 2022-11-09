@@ -3,7 +3,6 @@ const path = require('path')
 const fs = require('fs')
 const router = express.Router();
 const multer = require('multer')
-const duration = require("wav-audio-length").default;
 
 const storage = multer.diskStorage({
   filename: function (req, file, cb) {
@@ -35,19 +34,24 @@ router.post('/upload', upload.single('file'), (req, res) => {
   }
 });
 
-router.get('/metadata', (req, res) => {
+router.get('/metadata', async (req, res) => {
   if(req.query.name) {
     const name = req.query.name
     const filePath = path.join(__dirname, `../../uploads/${name}`);
-    fs.readFile(filePath, 'binary', (err, content) => {
-      if (err) {
+    fs.stat(filePath, (err, stats) => {
+      if(err) {
         console.log(err)
+        res.statusCode = 400;
+        return res.json({
+          status: "Whoops, that file does not exist!"
+        });
+      } else {
+        console.log(stats)
+        res.send({metadata: stats})
       }
-      let buffer = Buffer.from(content, 'binary');
-      let sec = duration(buffer);
-      res.send({buffer: buffer, length: sec})
-      console.log(sec);
-    });
+    })
+  } else {
+    res.send("Please provide a param in the request.")
   }
 })
 
@@ -63,10 +67,9 @@ router.get('/list', (req, res) => {
   });
 })
 
-router.get('/info', async (req, res, next) => {
+router.get('/file', async (req, res, next) => {
   // TODO(ruhaan): I'd like to implement a more robust error file system, where a malicious filename will not allow
-  //  unwanted access to files.
-
+  //  unwanted access to files. A database of filepaths will be conducive to this.
   let options = {
     root: path.join(__dirname, '../../uploads'),
     dotfiles: 'deny',
@@ -80,17 +83,14 @@ router.get('/info', async (req, res, next) => {
     const fileName = req.query.name
     res.sendFile(fileName, options, (err) => {
       if(err) {
-        // res.sendStatus(404)
         next(err)
       } else {
         console.log('Sent:', fileName)
       }
     })
-  } else {
-    // res.status(400);
-    res.send("No filename provided!");
   }
 
+  res.send("No filename provided!");
 })
 
 module.exports = router
