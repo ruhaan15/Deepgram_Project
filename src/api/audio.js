@@ -27,7 +27,7 @@ router.get('/', (req, res) => {
 // use query here because we want to "filter" results
 router.get('/file',  (req, res, next) => {
   // TODO(ruhaan): I'd like to implement a more robust error file system, where a malicious filename will not allow
-  //  unwanted access to files. A database of filepaths will be conducive to this.
+  //  unwanted access to files. A database of filepaths would be conducive to this.
   let options = {
     root: path.join(__dirname, '../../uploads'),
     dotfiles: 'deny',
@@ -46,9 +46,9 @@ router.get('/file',  (req, res, next) => {
         console.log('Sent:', fileName)
       }
     })
+  } else {
+    res.json({message: "No filename provided!"});
   }
-
-  res.send("No filename provided!");
 })
 
 // use param here because we want to get the metadata of a specific file
@@ -104,7 +104,7 @@ router.post('/upload', upload.single('file'), (req, res) => {
   console.log(req.file)
   if(req.file === undefined) {
     res.status(500)
-    res.send("Nice try, you actually gotta upload a file.");
+    res.send("Nice try, you actually gotta upload a file ;)");
   } else {
     res.send("File successfully uploaded")
   }
