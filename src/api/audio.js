@@ -74,8 +74,14 @@ router.get('/file/:file/download', (req, res) => {
   const fileName = req.params.file
   const filePath = path.join(__dirname, `../../uploads/${fileName}`);
   res.download(filePath, (err) => {
-    // this function will automatically send an error when there is one
-    console.log(err);
+    if(err) {
+      // res.statusCode = 400;
+      return res.json({
+        status: "Whoops, that file does not exist!"
+      });
+      console.log(err);
+    }
+
   })
 
 })
