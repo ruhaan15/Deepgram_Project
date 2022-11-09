@@ -16,7 +16,19 @@ const storage = multer.diskStorage({
   },
 })
 
-const upload = multer({ storage })
+// list of allowed filetypes
+const whitelist = ['audio/wav']
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (!whitelist.includes(file.mimetype)) {
+      return cb(new Error('file is not allowed'))
+    }
+
+    cb(null, true)
+  }
+})
 
 const directoryPath = path.join(__dirname, '../../uploads');
 
